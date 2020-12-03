@@ -1,0 +1,44 @@
+# 운영체제 수준에서 변경이 일어나는 base dockerfile 이미지
+FROM centos:7
+
+# 언어셋 설치
+RUN yum clean all \
+    && yum repolist \
+    && yum -y update \
+    && sed -i "s/en_US/all/" /etc/yum.conf  \
+    && yum -y reinstall glibc-common
+
+# os 패키지 설치
+RUN yum -y install tar unzip vi vim telnet net-tools curl openssl \
+    && yum -y install apr apr-util apr-devel apr-util-devel \
+    && yum -y install zlib zlib-devel libffi-devel \
+    && yum -y groupinstall 'Development Tools' \
+    && yum clean all
+
+# Python 설치
+RUN cd /tmp \
+    && curl -O https://www.python.org/ftp/python/3.8.1/Python-3.8.1.tgz \
+    && tar zxvf Python-3.8.1.tgz \
+    && cd Python-3.8.1 \
+    && ./configure \
+    && make \
+    && make install \
+    && rm -f /bin/python \
+    && ln -s /usr/local/bin/python3.8 /bin/python
+
+RUN pip install -U pip setuptools
+
+RUN mkdir /code
+WORKDIR /code
+
+# python 패키지 설치
+ADD requirements.txt /code/
+RUN pip install --upgrade pip
+RUN pip install -r requirements.txt
+ADD . /code/
+
+# Postsql 설치
+
+
+# 작성자 정보(옵션)
+MAINTAINER Hyunwoo Hong <hw.hwhong@haezoom.com>

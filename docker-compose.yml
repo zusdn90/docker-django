@@ -1,0 +1,44 @@
+version: '3'
+services:
+  nginx:
+    image: library/nginx:latest
+    ports:
+    - '80:80'
+    volumes:
+    - .:/code
+    - ./config/ngnix:/etc/nginx/conf.d
+    - ./.static_root:/code/static
+    depends_on:
+      - django
+
+  django:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    volumes:
+      - .:/code
+    environment:
+      - LANG=ko_KR.UTF-8
+      - LANGUAGE=ko_KR.UTF-8
+    expose:
+      - '8000'
+    depends_on:
+      - db
+    command: "./django-entrypoint.sh"
+
+  db:
+    image: postgres:9.6
+    container_name: demo_postgres_1
+    volumes:
+      - ./data:/var/lib/postgresql/data
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=postgres
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: "pg_isready -h localhost -p 5432 -q -U postgres"
+      interval: 3s
+      timeout: 1s
+      retries: 10
