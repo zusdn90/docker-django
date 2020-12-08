@@ -1,6 +1,7 @@
 version: '3'
 services:
   nginx:
+    container_name: hwhong_ngnix_1
     image: library/nginx:latest
     ports:
     - '80:80'
@@ -12,6 +13,7 @@ services:
       - django
 
   django:
+    container_name: hwhong_django_1
     build:
       context: .
       dockerfile: Dockerfile
@@ -24,11 +26,11 @@ services:
       - '8000'
     depends_on:
       - db
-    command: "./django-entrypoint.sh"
+    command: "./script/django-entrypoint.sh"
 
   db:
     image: postgres:9.6
-    container_name: demo_postgres_1
+    container_name: hwhong_postgres_1
     volumes:
       - ./data:/var/lib/postgresql/data
     environment:
