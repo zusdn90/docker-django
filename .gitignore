@@ -20,6 +20,7 @@ sftp-config.json
 __pycache__
 *.pyc
 
+
 # Logs
 logs
 *.log
@@ -33,6 +34,7 @@ yarn-error.log*
 .tox
 nosetests.xml
 htmlcov
+.pytest_cache
 
 # Translations
 *.mo
@@ -57,7 +59,7 @@ node_modules
 media/*
 
 # Collected staticfiles
-.staticfiles/
+staticfiles/*
 
 .cache/
 **/certs

@@ -11,7 +11,7 @@
 #RUN npm run build
 
 # Stage 2 - nginx & frontend dist
-FROM nginx:latest
+FROM library/nginx:latest
 COPY config/nginx/nginx.conf /etc/nginx/nginx.conf
 #COPY --from=build-deps /app/dist/ /dist/
 
