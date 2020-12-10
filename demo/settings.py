@@ -20,7 +20,6 @@ ROOT_DIR = os.path.dirname(BASE_DIR)
 #ROOT_DIR = environ.Path(__file__) - 2
 env = environ.Env()
 
-print("root dir : ", ROOT_DIR)
 # ------------------------------------------------------------------------------
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/3.0/howto/deployment/checklist/
@@ -93,15 +92,13 @@ SECRET_KEY = get_secret("SECRET_KEY")
 #     str(ROOT_DIR("static")),
 # ]
 
-STATIC_URL = '/static/'
+STATIC_URL = '/static/'     # nginx.conf의 location /static/ 경로와 맵핑
 STATIC_DIR = os.path.join(BASE_DIR, 'static')
 STATICFILES_DIRS = [
     STATIC_DIR,
 ]
-
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 
-print("staticfile dir : ", STATICFILES_DIRS)
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
