@@ -10,28 +10,22 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/3.0/ref/settings/
 """
 
-import os
+import os, json
 import environ
 
-# Build paths inside the project like this: os.path.join(BASE_DIR, ...)
+from django.core.exceptions import ImproperlyConfigured
+
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 ROOT_DIR = os.path.dirname(BASE_DIR)
+#ROOT_DIR = environ.Path(__file__) - 2
 env = environ.Env()
 
+print("root dir : ", ROOT_DIR)
+# ------------------------------------------------------------------------------
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/3.0/howto/deployment/checklist/
+# ------------------------------------------------------------------------------
 
-# SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'c5auo0w3)0@gaf%g)ufqa-1gm^6-dud+vd!*ku#lgf8gzzilzh'
-
-# SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
-
-# ALLOWED_HOSTS = ['127.0.0.1', '0.0.0.0', 'localhost', 'django', 'db']
-ALLOWED_HOSTS = ['*']
-
-
-# Application definition
 DJANGO_APPS = [
     'django.contrib.admin',
     'django.contrib.auth',
@@ -39,6 +33,8 @@ DJANGO_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    # 'django.celery_beat',
+    # 'django_celery_results',
 ]
 
 THIRD_PARTY_APPS = [
@@ -49,7 +45,7 @@ THIRD_PARTY_APPS = [
 ]
 
 LOCAL_APPS = [
-    'apps.api',
+    'apps.api.kakao',
 ]
 
 INSTALLED_APPS = DJANGO_APPS + THIRD_PARTY_APPS + LOCAL_APPS
@@ -63,11 +59,56 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
-
 CORS_ALLOW_CREDENTIALS = True
 
-ROOT_URLCONF = 'demo.urls'
+# ------------------------------------------------------------------------------
+# SECURITY WARNING: keep the secret key used in production secret!
+# SECRET_KEY는 주로 쿠키데이터 해시, 암호화 등 임시적인 일에 사용되고, 변경 시 로그인 세션 등의 데이터가 사라질 수 있다. 
+# ------------------------------------------------------------------------------
+secret_file = os.path.join(BASE_DIR + '/config', 'secrets.json')
 
+with open(secret_file) as f:
+    secrets = json.loads(f.read())
+    
+def get_secret(setting, secrets=secrets):
+    """비밀 변수를 가져오거나 명시적 예외를 반환한다."""
+    try:
+        return secrets[setting]    
+    except KeyError:
+        error_msg = "Set the {} environment variable".format(setting)
+        raise ImproperlyConfigured(error_msg)
+
+SECRET_KEY = get_secret("SECRET_KEY")    
+
+
+# ------------------------------------------------------------------------------
+# STATIC FILE CONFIGURATION
+# See: https://docs.djangoproject.com/en/dev/ref/settings/#static-root
+# See: https://docs.djangoproject.com/en/dev/ref/settings/#static-url
+# See: https://docs.djangoproject.com/en/dev/ref/contrib/staticfiles/#std:setting-STATICFILES_DIRS
+# ------------------------------------------------------------------------------
+#STATIC_ROOT = str(ROOT_DIR("staticfiles"))
+#STATIC_URL = "/staticfiles/"
+# STATICFILES_DIRS = [
+#     str(ROOT_DIR("static")),
+# ]
+
+STATIC_URL = '/static/'
+STATIC_DIR = os.path.join(BASE_DIR, 'static')
+STATICFILES_DIRS = [
+    STATIC_DIR,
+]
+
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
+
+print("staticfile dir : ", STATICFILES_DIRS)
+# SECURITY WARNING: don't run with debug turned on in production!
+DEBUG = True
+
+# ------------------------------------------------------------------------------
+# HTML Template
+# 공통적으로 들어가는 html코드를 관리하기 위한 확장형 template들의 경로를 설정
+# ------------------------------------------------------------------------------
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
@@ -84,12 +125,15 @@ TEMPLATES = [
     },
 ]
 
+# ALLOWED_HOSTS = ['127.0.0.1', '0.0.0.0', 'localhost', 'django', 'db']
+ALLOWED_HOSTS = ['*']
+ROOT_URLCONF = 'demo.urls'
 WSGI_APPLICATION = 'demo.wsgi.application'
 
-
+# ------------------------------------------------------------------------------
 # Database
-# https://docs.djangoproject.com/en/3.0/ref/settings/#databases
-
+# See: https://docs.djangoproject.com/en/3.0/ref/settings/#databases
+# ------------------------------------------------------------------------------
 DATABASES = {
     # 'default': {
     #     'ENGINE': 'django.db.backends.sqlite3',
@@ -105,9 +149,30 @@ DATABASES = {
     }
 }
 
+# ------------------------------------------------------------------------------
+# DJANGO REST FRAMEWORK
+# ------------------------------------------------------------------------------
+REST_FRAMEWORK = {
+    "UPLOADED_FILES_USE_URL": False,
+    "DEFAULT_AUTHENTICATION_CLASSES": [
+        # "rest_framework.authentication.SessionAuthentication",
+        # "rest_framework.authentication.BasicAuthentication",
+        # "rest_framework_jwt.authentication.JSONWebTokenAuthentication",
+    ],
+    # django restful api 로긴없이 사용 불가
+    # "DEFAULT_PERMISSION_CLASSES": ["rest_framework.permissions.IsAuthenticated",],
+    "DEFAULT_PARSER_CLASSES": [
+        "rest_framework.parsers.JSONParser",
+        "rest_framework.parsers.FormParser",
+        "rest_framework.parsers.MultiPartParser",
+        "rest_framework.parsers.FileUploadParser",
+    ],
+}
 
+# ------------------------------------------------------------------------------
 # Password validation
-# https://docs.djangoproject.com/en/3.0/ref/settings/#auth-password-validators
+# See: https://docs.djangoproject.com/en/3.0/ref/settings/#auth-password-validators
+# ------------------------------------------------------------------------------
 
 AUTH_PASSWORD_VALIDATORS = [
     {
@@ -123,10 +188,10 @@ AUTH_PASSWORD_VALIDATORS = [
         'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
     },
 ]
-
-# PASSWORD STORAGE SETTINGS
 # ------------------------------------------------------------------------------
+# PASSWORD STORAGE SETTINGS
 # See https://docs.djangoproject.com/en/dev/ref/settings/#password-hashers
+# ------------------------------------------------------------------------------
 PASSWORD_HASHERS = [
     "django.contrib.auth.hashers.PBKDF2PasswordHasher",
     "django.contrib.auth.hashers.PBKDF2SHA1PasswordHasher",
@@ -135,28 +200,76 @@ PASSWORD_HASHERS = [
     "django.contrib.auth.hashers.BCryptPasswordHasher",
 ]
 
+# ------------------------------------------------------------------------------
+# Logging
+# debug=true일 때는 브라우저 상에서 api 500 에러가 나면, 브라우저에도 로그가 다 보임.
+# debug=false로 설정 시 브라우저 상에서 500 에러시 브라우저 상에서 로그는 안보이지만 콘솔 stdout으로도 안보이는 문제가 있음.
+# 아래 설정을 해주어야 보임.
+# ------------------------------------------------------------------------------
+from django.utils.log import DEFAULT_LOGGING
 
+DEFAULT_LOGGING["handlers"]["console"]["filters"] = []
+
+LOGGING = {
+    "version": 1,
+    # 기존의 로깅 설정을 비활성화 할 것인가?
+    "disable_existing_loggers": False,
+    # 포맷터
+    # 로그 레코드는 최종적으로 텍스트로 표현됨
+    # 이 텍스트의 포맷 형식 정의
+    # 여러 포맷 정의 가능
+    "formatters": {
+        "verbose": {
+            "format": "[%(asctime)s] %(levelname)s [%(name)s:%(lineno)s] %(message)s",
+            "datefmt": "%d/%b/%Y %H:%M:%S",
+        },
+        "simple": {"format": "%(message)s"},
+    },
+    # 핸들러
+    # 로그 레코드로 무슨 작업을 할 것인지 정의
+    # 여러 핸들러 정의 가능
+     "handlers": {
+        "console": {
+            "level": "DEBUG",
+            "class": "logging.StreamHandler",
+            "formatter": "simple"
+        },
+        # 로그 파일을 만들어 텍스트로 로그레코드 저장
+        "logfile": {
+            "level": "DEBUG",
+            # "class": "logging.handlers.TimedRotatingFileHandler",
+            "class": "logging.FileHandler",
+            "filename": "/var/log/application.log",
+            # "when": "D",  # this specifies the interval
+            # "interval": 1,  # defaults to 1, only necessary for other values
+            #"maxBytes": 1024 * 1024 * 10, # 로그 파일 당 10M 까지
+            #"backupCount": 10,  # 로그 파일을 최대 10개까지 유지
+            "formatter": "simple",
+        },
+    },
+    # 로거
+    # 로그 레코드 저장소
+    # 로거를 이름별로 정의
+    "loggers": {"default": {"handlers": ["logfile"], "level": "DEBUG",}},
+}
+
+# ------------------------------------------------------------------------------
 # Internationalization
-# https://docs.djangoproject.com/en/3.0/topics/i18n/
+# See: https://docs.djangoproject.com/en/3.0/topics/i18n/
+# ------------------------------------------------------------------------------
 
 LANGUAGE_CODE = "ko-kr"
-
 TIME_ZONE = "Asia/Seoul"
-
 USE_I18N = True
-
 USE_L10N = True
-
 USE_TZ = True
 
-
-# Static files (CSS, JavaScript, Images)
-# https://docs.djangoproject.com/en/3.0/howto/static-files/
-
-STATIC_URL = '/static/'
-STATIC_DIR = os.path.join(BASE_DIR, 'static')
-STATICFILES_DIRS = [
-    STATIC_DIR,
-]
-
-STATIC_ROOT = os.path.join(BASE_DIR, '.static_root')
+# ------------------------------------------------------------------------------
+# Celery 설정
+# ------------------------------------------------------------------------------
+CELERY_BROKER_URL = 'redis://docker.for.mac.localhost:6379'     # docker로 실행한 환경일 경우 localhost를 docker.for.mac.localhost로 변경해야한다.
+CELERY_ACCEPT_CONTENT = ['application/json']
+CELERY_RESULT_BACKEND = 'redis://docker.for.mac.localhost:6379'
+CELERY_RESULT_SERIALIZER = 'json'
+CELERY_TASK_SERIALIZER = 'json'
+CELERY_TIMEZONE = 'Asia/Seoul'
