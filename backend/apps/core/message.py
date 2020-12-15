@@ -1,0 +1,17 @@
+from __future__ import unicode_literals
+
+RETRIEVE_SUCCESS = "조회 성공"
+RETRIEVE_FAIL = "조회 실패"
+RETRIEVE_FAIL_W_PARAM = "%s 조회 실패"
+SAVE_SUCCESS = "저장 성공"
+SAVE_FAIL = "저장 실패"
+SAVE_FAIL_W_PARAM = "%s 저장 실패"
+DELETE_FAIL_W_PARAM = "%s 삭제 실패"
+REQUEST_SUCCESS = "요청 성공"
+REQUEST_FAIL = "요청 실패"
+NO_AUTH = "권한이 없습니다."
+SERVER_ERROR = "서버에러가 발생했습니다."
+NO_DATA_FOUND = "데이터를 찾을 수 없습니다."
+NO_DATA_FOUND_W_PARAM = "%s 데이터를 찾을 수 없습니다."
+SUCCESS_SENT_EMAIL = "이메일 전송 완료"
+FAIL_SENT_EMAIL = "이메일 전송 실패"

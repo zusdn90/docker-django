@@ -33,7 +33,7 @@ services:
       - .:/code
       - ./config/nginx/nginx.conf:/etc/nginx/nginx.conf:ro
       #- ./config/nginx:/etc/nginx/conf.d
-      - ./staticfiles:/code/staticfiles
+      - ./backend/staticfiles:/code/staticfiles
     depends_on:
       - django
        
@@ -52,7 +52,7 @@ services:
     depends_on:
       - db
     restart: always
-    command: "./script/django-entrypoint.sh"
+    command: ./backend/script/django-entrypoint.sh
 
   db:
     image: gusdn90/postgres9.6:1.0

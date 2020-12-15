@@ -12,7 +12,7 @@
 
 # Stage 2 - nginx & frontend dist
 FROM library/nginx:latest
-COPY config/nginx/nginx.conf /etc/nginx/nginx.conf
+COPY ./backend/config/nginx/nginx.conf /etc/nginx/nginx.conf
 #COPY --from=build-deps /app/dist/ /dist/
 
 CMD ["nginx", "-g", "daemon off;"]
